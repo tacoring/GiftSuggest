@@ -13,6 +13,8 @@
 //@property (strong, nonatomic) IBOutlet UIImageView *profileImage;
 @property (strong, nonatomic) IBOutlet UILabel *userName;
 @property (strong, nonatomic) IBOutlet UILabel *userBD;
+@property (strong, nonatomic) IBOutlet UILabel *countDay;
+@property (strong, nonatomic) IBOutlet UIImageView *coverPic;
 @end
 
 @implementation FriendDetailViewController
@@ -28,14 +30,30 @@
     self.profilePictureView.profileID = self.userID;
     self.userName.text = self.userData[0][@"name"];
     self.userBD.text = self.userData[0][@"birthday"];
+    NSString *url_Img1 = self.userData[0][@"pic_cover"][@"source"];
+    
+    NSLog(@"Show url_Img_FULL: %@",url_Img1);
+    self.coverPic.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:url_Img1]]];
+}
+
+-(void)setFriendLike:(NSArray *)friendData{
+    NSLog(@"setFriendLike");
+    self.userLike = friendData;
+    NSLog(@"Print : %@", self.userLike[0][@"type"]);
+    
+    int i = 0;
+    while(self.userLike[i][@"type"]!= nil){
+        NSLog(@"get obj : %@", self.userLike[i][@"type"]);
+        i++;
+    }
+    NSLog (@" i = %d", i);
 }
 
 -(NSArray *)getFriendDetailData:(NSString *)aUID{
-    // Query to fetch the active user's friends, limit to 25.
     NSLog(@"getFriendData");
     NSArray *result;
     NSString *query = [NSString stringWithFormat:
-    @"SELECT uid, name, pic_square,birthday FROM user WHERE uid = %@", aUID];
+    @"SELECT uid, name, pic_square, birthday, pic_cover FROM user WHERE uid = %@", aUID];
     // Set up the query parameter
     NSDictionary *queryParam = @{ @"q": query };
     // Make the API request that uses FQL
@@ -61,6 +79,36 @@
     return result;
 }
 
+-(NSArray *)getFriendLikePage:(NSString *)aUID{
+    NSLog(@"getFriendLikePage");
+    NSArray *result;
+    NSString *query = [NSString stringWithFormat:
+                       @"SELECT uid, page_id, type from page_fan where uid = %@", aUID];
+    // Set up the query parameter
+    NSDictionary *queryParam = @{ @"q": query };
+    // Make the API request that uses FQL
+    [FBRequestConnection startWithGraphPath:@"/fql"
+                                 parameters:queryParam
+                                 HTTPMethod:@"GET"
+                          completionHandler:^(FBRequestConnection *connection,
+                                              id result,
+                                              NSError *error) {
+                              if (error) {
+                                  NSLog(@"Error: %@", [error localizedDescription]);
+                              } else {
+                                  NSLog(@"Result: %@", result);
+                                  // Get the friend data to display
+                                  NSArray *friendInfo = (NSArray *) result[@"data"];
+                                  result = friendInfo;
+                                  // Show the friend details display
+                                  [self setFriendLike:friendInfo];
+                              }
+                          }];
+    
+    NSLog(@"getFriendLikePage Done");
+    return result;
+}
+
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
 {
     self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil];
@@ -73,11 +121,8 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
-//    self.friendName = [[UILabel alloc] initWithFrame:CGRectMake(50, 100, 200, 100)];
-//    self.friendName.text = userID;
-//    [self.view addSubview:self.friendName];
     [self getFriendDetailData:userID];
+    [self getFriendLikePage:userID];
     
 }
 

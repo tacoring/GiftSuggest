@@ -70,8 +70,10 @@
     
     if (self.isLogin){
         self.query.hidden = true;
+        self.navigationItem.rightBarButtonItem.enabled = YES;
     }else{
         self.query.hidden = true;
+        self.navigationItem.rightBarButtonItem.enabled = NO;
     }
     
 }
@@ -95,7 +97,8 @@
         // Create a FBLoginView to log the user in with basic, email and likes permissions
         // You should ALWAYS ask for basic permissions (basic_info) when logging the user in
         FBLoginView *loginView = [[FBLoginView alloc] initWithReadPermissions:@[@"basic_info", @"email", @"user_likes",
-                                                                                @"user_birthday", @"friends_birthday"]];
+                                                                                @"user_birthday", @"friends_birthday",
+                                                                                @"friends_likes", @"friends_interests"]];
         
         // Set this loginUIViewController to be the loginView button's delegate
         loginView.delegate = self;
@@ -127,6 +130,7 @@
     self.statusLabel.text = @"You're logged in as";
     self.isLogin = true;
     self.query.hidden = true;
+    self.navigationItem.rightBarButtonItem.enabled = YES;
 
     
      
@@ -140,6 +144,7 @@
     self.statusLabel.text= @"You're not logged in!";
     self.isLogin = false;
     self.query.hidden = true;
+    self.navigationItem.rightBarButtonItem.enabled = NO;
 
 }
 

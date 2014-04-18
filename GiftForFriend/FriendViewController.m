@@ -26,8 +26,6 @@
     NSLog(@"setFriendData");
      self.userData = friendData;
     [self.tableView reloadData];
-//    [self.tableView beginUpdates];
-//    [self.tableView endUpdates];
 }
 
 -(NSArray *)getFriendData{
@@ -49,7 +47,7 @@
                               if (error) {
                                   NSLog(@"Error: %@", [error localizedDescription]);
                               } else {
-                                  NSLog(@"Result: %@", result);
+//                                  NSLog(@"Result: %@", result);
                                   // Get the friend data to display
                                   NSArray *friendInfo = (NSArray *) result[@"data"];
                                   result = friendInfo;
@@ -142,14 +140,13 @@
 //#warning Incomplete method implementation.
     // Return the number of rows in the section.
     NSLog(@"numberOfRowsInSection : %lu", (unsigned long)[self.userData count]);
-    NSLog(@"numberOfRowsInSection");
     return [self.userData count];
 }
 
 
 - (UITableViewCell *)tableView:(UITableView *)tableView cellForRowAtIndexPath:(NSIndexPath *)indexPath
 {
-    NSLog(@"cellForRowAtIndexPath");
+//    NSLog(@"cellForRowAtIndexPath");
     static NSString *CellIdentifier = @"Cell";
     UITableViewCell *cell = [tableView dequeueReusableCellWithIdentifier:CellIdentifier];
     

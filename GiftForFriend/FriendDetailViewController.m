@@ -39,14 +39,26 @@
 -(void)setFriendLike:(NSArray *)friendData{
     NSLog(@"setFriendLike");
     self.userLike = friendData;
-    NSLog(@"Print : %@", self.userLike[0][@"type"]);
-    
+
     int i = 0;
-    while(self.userLike[i][@"type"]!= nil){
-        NSLog(@"get obj : %@", self.userLike[i][@"type"]);
+    NSMutableArray *userLikeArray = [[NSMutableArray alloc] init];
+    for (NSDictionary *groupDic in self.userLike){
+        NSLog(@"i = %d", i);
+        NSArray *userLikeDetailArray = [[NSArray alloc] initWithObjects:self.userLike[i][@"type"],@"",nil];
+        [userLikeArray addObject:userLikeDetailArray];
         i++;
     }
-    NSLog (@" i = %d", i);
+//    int i = 0;
+//    NSMutableArray *userLikeArray = [[NSMutableArray alloc] init];
+//    while(![self.userLike[i][@"type"] isEqualToString:@""]){
+//        NSLog(@"get obj[%d] : %@ : %@ : %lu", i, self.userLike[i][@"type"], self.userLike[i][@"page_id"], (unsigned long)userLikeArray.count);
+//        NSArray *userLikeDetailArray = [[NSArray alloc] initWithObjects:self.userLike[i][@"type"],@"",nil];
+//        [userLikeArray addObject:userLikeDetailArray];
+//        i++;
+//    }
+    
+    NSLog(@"userLikeArray : %lu", (unsigned long)userLikeArray.count);
+    NSLog(@"setFriendLike Done !!!!!!!!!!!!!!!!!!!!!!");
 }
 
 -(NSArray *)getFriendDetailData:(NSString *)aUID{
@@ -123,7 +135,7 @@
     [super viewDidLoad];
     [self getFriendDetailData:userID];
     [self getFriendLikePage:userID];
-    
+    NSLog(@"viewDidLoad Done");
 }
 
 - (void)didReceiveMemoryWarning

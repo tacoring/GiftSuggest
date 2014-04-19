@@ -8,10 +8,15 @@
 
 #import <UIKit/UIKit.h>
 #import <FacebookSDK/FacebookSDK.h>
+#import "FBUserLike.h"
+#import "FBUserLikeFreq.h"
 
 @interface FriendDetailViewController : UIViewController
+
 @property (strong, nonatomic) UILabel *friendName;
 @property (strong, nonatomic) NSArray *userData;
 @property (strong, nonatomic) NSArray *userLike;
 @property (strong, nonatomic) NSString *userID;
+
+//@property Boolean debug = false;
 @end

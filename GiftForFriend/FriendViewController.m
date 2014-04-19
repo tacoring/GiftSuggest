@@ -23,18 +23,19 @@
 #pragma mark - Helper methods
 
 -(void)setFriendData:(NSArray *)friendData{
-    NSLog(@"setFriendData");
+//    NSLog(@"setFriendData");
      self.userData = friendData;
     [self.tableView reloadData];
 }
 
 -(NSArray *)getFriendData{
+    NSLog(@"getFriendData : %@",[self getCurrentMonthDay]);
     // Query to fetch the active user's friends, limit to 25.
     NSLog(@"getFriendData");
     NSArray *result;
-    NSString *query =
-    @"SELECT uid, name, pic_square,birthday FROM user WHERE uid IN "
-    @"(SELECT uid2 FROM friend WHERE uid1 = me()) AND birthday != \"\"";
+    NSString *query = [NSString stringWithFormat:
+    @"SELECT uid, name, pic_square,birthday_date FROM user WHERE uid IN (SELECT uid2 FROM friend WHERE uid1 = me()) AND birthday_date != \"\""
+    @"AND birthday_date > '%@' ORDER BY birthday_date ASC", [self getCurrentMonthDay]];
     // Set up the query parameter
     NSDictionary *queryParam = @{ @"q": query };
     // Make the API request that uses FQL
@@ -86,32 +87,6 @@
     NSLog(@"viewDidLoad");
     [super viewDidLoad];
     
-    // Uncomment the following line to preserve selection between presentations.
-    // self.clearsSelectionOnViewWillAppear = NO;
-    
-    // Uncomment the following line to display an Edit button in the navigation bar for this view controller.
-    // self.navigationItem.rightBarButtonItem = self.editButtonItem;
-    
-    
-    // Add a toolbar to hold a Done button that will dismiss this view controller
-//    self.toolbar = [[UIToolbar alloc] init];
-//    self.toolbar.barStyle = UIBarStyleDefault;
-//    [self.toolbar setAutoresizingMask:UIViewAutoresizingFlexibleWidth];
-//    [self.toolbar sizeToFit];
-//    
-//    UIBarButtonItem *doneButton = [[UIBarButtonItem alloc]
-//                                   initWithBarButtonSystemItem:UIBarButtonSystemItemDone
-//                                   target:self
-//                                   action:@selector(doneButtonPressed:)];
-//    
-//    UIBarButtonItem *space = [[UIBarButtonItem alloc]
-//                              initWithBarButtonSystemItem:UIBarButtonSystemItemFlexibleSpace
-//                              target:nil
-//                              action:nil];
-//    
-//    self.toolbar.items = [NSArray arrayWithObjects:space, doneButton, nil];
-//    
-    
     //get userData
     self.userData = [self getFriendData];
     
@@ -131,7 +106,7 @@
 {
 //#warning Potentially incomplete method implementation.
     // Return the number of sections.
-    NSLog(@"numberOfSectionsInTableView");
+//    NSLog(@"numberOfSectionsInTableView");
     return 1;
 }
 
@@ -156,7 +131,7 @@
                 reuseIdentifier:CellIdentifier];
     }
     cell.textLabel.text = self.userData[indexPath.row][@"name"];
-    cell.detailTextLabel.text = self.userData[indexPath.row][@"birthday"];
+    cell.detailTextLabel.text = self.userData[indexPath.row][@"birthday_date"];
     UIImage *image = [UIImage imageWithData:
                       [NSData dataWithContentsOfURL:
                        [NSURL URLWithString:
@@ -209,5 +184,21 @@
     
 }
 
+-(NSString*)getCurrentMonthDay{
+    NSLog(@"getCurrentMonthDay");
+    NSDate *date = [[NSDate alloc] init];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"MM/dd"];
+    NSString *dateString = [dateFormatter stringFromDate:date];
+    //    self.TimeLabel.text = dateString;
+    
+    [dateFormatter setTimeZone:[NSTimeZone timeZoneWithName:@"US/Pacific"]];
+    //    [dateFormatter setTimeZone:[NSTimeZone timeZoneWithName:@"America/New_York"]];
+    
+    NSString *melbourneTime = [dateFormatter stringFromDate:date];
+    NSLog(@"getCurrentMonthDay : %@", melbourneTime);
+    
+    return melbourneTime;
+}
 
 @end

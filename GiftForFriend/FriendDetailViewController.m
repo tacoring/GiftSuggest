@@ -14,6 +14,10 @@
 @property (strong, nonatomic) IBOutlet UILabel *userName;
 @property (strong, nonatomic) IBOutlet UILabel *userBD;
 @property (strong, nonatomic) IBOutlet UILabel *countDay;
+@property (strong, nonatomic) IBOutlet UILabel *firstLike;
+@property (strong, nonatomic) IBOutlet UILabel *secondLike;
+@property (strong, nonatomic) IBOutlet UILabel *thirdLike;
+@property (strong, nonatomic) IBOutlet UILabel *thirdLikeTitle;
 @property (strong, nonatomic) IBOutlet UIImageView *coverPic;
 @end
 
@@ -24,48 +28,106 @@
 -(void)setFriendData:(NSArray *)friendData{
     NSLog(@"setFriendData");
     self.userData = friendData;
-//    for (int i = 0 ; i < self.userData.count ; i ++){
-//        NSLog(@" Detail data : %@", self.userData[i]);
-//    }
     self.profilePictureView.profileID = self.userID;
     self.userName.text = self.userData[0][@"name"];
-    self.userBD.text = self.userData[0][@"birthday"];
-    NSString *url_Img1 = self.userData[0][@"pic_cover"][@"source"];
+    self.userBD.text = self.userData[0][@"birthday_date"];
+    NSLog(@"setFriendData 1");
+    NSLog(@"setFriendData 11, %@", self.userData[0][@"pic_cover"]);
+    if ([self.userData[0][@"pic_cover"] count] == 0){
+        NSLog(@"pic null");
+    }
+    NSLog(@"setFriendData 2");
+    if (self.userData[0][@"pic_cover"]!=nil){
+        NSString *url_Img1 = self.userData[0][@"pic_cover"][@"source"];
+        self.coverPic.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:url_Img1]]];
+    }else{
+        NSLog(@"pic null");
+    }
+    NSLog(@"setFriendData 3");
+    NSInteger timeDiff = [self compareTime:[self formatBD:self.userData[0][@"birthday_date"]]];
     
-    NSLog(@"Show url_Img_FULL: %@",url_Img1);
-    self.coverPic.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:url_Img1]]];
+    self.countDay.text = [NSString stringWithFormat:@"%ld", (long)timeDiff];
+    
 }
 
 -(void)setFriendLike:(NSArray *)friendData{
     NSLog(@"setFriendLike");
     self.userLike = friendData;
 
-    int i = 0;
     NSMutableArray *userLikeArray = [[NSMutableArray alloc] init];
     for (NSDictionary *groupDic in self.userLike){
-        NSLog(@"i = %d", i);
-        NSArray *userLikeDetailArray = [[NSArray alloc] initWithObjects:self.userLike[i][@"type"],@"",nil];
-        [userLikeArray addObject:userLikeDetailArray];
-        i++;
+//        NSLog(@"groupDic :%@", [groupDic description]);
+        FBUserLike *aUserLike = [[FBUserLike alloc] initWithUserLike:groupDic[@"page_id"]
+                                                             andType:groupDic[@"type"]
+                                                              anduid:groupDic[@"uid"]];
+        [userLikeArray addObject:aUserLike];
     }
-//    int i = 0;
-//    NSMutableArray *userLikeArray = [[NSMutableArray alloc] init];
-//    while(![self.userLike[i][@"type"] isEqualToString:@""]){
-//        NSLog(@"get obj[%d] : %@ : %@ : %lu", i, self.userLike[i][@"type"], self.userLike[i][@"page_id"], (unsigned long)userLikeArray.count);
-//        NSArray *userLikeDetailArray = [[NSArray alloc] initWithObjects:self.userLike[i][@"type"],@"",nil];
-//        [userLikeArray addObject:userLikeDetailArray];
-//        i++;
-//    }
     
-    NSLog(@"userLikeArray : %lu", (unsigned long)userLikeArray.count);
-    NSLog(@"setFriendLike Done !!!!!!!!!!!!!!!!!!!!!!");
+    NSMutableArray *userLikeTemp = [[NSMutableArray alloc] init];
+    Boolean haveThis = false;
+    for (FBUserLike *obj in userLikeArray){
+        NSString *aType = obj.type;
+        for (FBUserLikeFreq *obj2 in userLikeTemp){
+            if ([aType isEqualToString:obj2.type]){
+                haveThis = true;
+                obj2.freq++;
+            }
+        }
+        if (haveThis == true){
+            
+        }else{
+//            NSLog(@"add object : %@", aType);
+            FBUserLikeFreq *aUser = [[FBUserLikeFreq alloc] initWithUserLike:aType andFreq:1];
+            [userLikeTemp addObject:aUser];
+        }
+        haveThis = false;
+        
+    }
+//    NSLog(@"Done Done");
+    if (userLikeTemp.count == 1){
+        FBUserLikeFreq *obj1 = userLikeTemp[0];
+        self.firstLike.text = obj1.type;
+        self.secondLike.hidden = true;
+        self.thirdLike.hidden = true;
+        self.thirdLikeTitle.hidden = true;
+        
+    }else if (userLikeTemp.count == 2){
+        FBUserLikeFreq *obj1 = userLikeTemp[0];
+        FBUserLikeFreq *obj2 = userLikeTemp[1];
+        if (obj1.freq > obj2.freq){
+            self.firstLike.text = obj1.type;
+            self.secondLike.text = obj2.type;
+            self.thirdLike.hidden = true;
+            self.thirdLikeTitle.hidden = true;
+            
+        }else{
+            self.firstLike.text = obj2.type;
+            self.secondLike.text = obj1.type;
+            self.thirdLike.hidden = true;
+            self.thirdLikeTitle.hidden = true;
+        }
+        
+    }else {
+        [userLikeTemp sortUsingComparator:^NSComparisonResult(FBUserLikeFreq *obj1, FBUserLikeFreq *obj2){
+            return obj2.freq - obj1.freq;
+        }];
+        FBUserLikeFreq *obj1 = userLikeTemp[0];
+        FBUserLikeFreq *obj2 = userLikeTemp[1];
+        FBUserLikeFreq *obj3 = userLikeTemp[2];
+        
+        self.firstLike.text = obj1.type;
+        self.secondLike.text = obj2.type;
+        self.thirdLike.text = obj3.type;
+    }
+//    NSLog(@"setFriendLike Done !!!!!!!!!!!!!!!!!!!!!!");
+    
 }
 
 -(NSArray *)getFriendDetailData:(NSString *)aUID{
     NSLog(@"getFriendData");
     NSArray *result;
     NSString *query = [NSString stringWithFormat:
-    @"SELECT uid, name, pic_square, birthday, pic_cover FROM user WHERE uid = %@", aUID];
+    @"SELECT uid, name, pic_square, birthday_date, pic_cover FROM user WHERE uid = %@", aUID];
     // Set up the query parameter
     NSDictionary *queryParam = @{ @"q": query };
     // Make the API request that uses FQL
@@ -108,7 +170,7 @@
                               if (error) {
                                   NSLog(@"Error: %@", [error localizedDescription]);
                               } else {
-                                  NSLog(@"Result: %@", result);
+//                                  NSLog(@"Result: %@", result);
                                   // Get the friend data to display
                                   NSArray *friendInfo = (NSArray *) result[@"data"];
                                   result = friendInfo;
@@ -135,6 +197,7 @@
     [super viewDidLoad];
     [self getFriendDetailData:userID];
     [self getFriendLikePage:userID];
+    
     NSLog(@"viewDidLoad Done");
 }
 
@@ -144,15 +207,40 @@
     // Dispose of any resources that can be recreated.
 }
 
-/*
-#pragma mark - Navigation
+-(NSInteger)compareTime:(NSString *)aDate{
+//    NSLog(@"compareTime : %@", aDate);
+    NSDate *date = [[NSDate alloc] init];
+    NSDateFormatter *dateFormatter = [[NSDateFormatter alloc] init];
+    [dateFormatter setDateFormat:@"MM-dd"];
+    
+    [dateFormatter setTimeZone:[NSTimeZone timeZoneWithName:@"US/Pacific"]];
+    
+    NSString *melbourneTime = [dateFormatter stringFromDate:date];
+    
+    NSDate *startDate = [dateFormatter dateFromString:melbourneTime];
+    NSDate *endDate = [dateFormatter dateFromString:aDate];
+    NSCalendar *gregorianCalendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSGregorianCalendar];
+    NSDateComponents *components = [gregorianCalendar components:NSDayCalendarUnit
+                                                        fromDate:startDate
+                                                          toDate:endDate
+                                                         options:0];
+    NSLog(@"Current Time : %@", melbourneTime);
+    NSLog(@"User Birthday : %@", aDate);
+    NSLog(@"Day Diff : %ld", (long)[components day]);
+//    NSInteger timeDiff = [components day];
+    return [components day];
 
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender
-{
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
 }
-*/
 
+-(NSString *)formatBD:(NSString *)aDate{
+//    NSLog(@"formatBD : %@",aDate);
+    
+    NSArray* components = [aDate componentsSeparatedByString:@"/"];
+//    NSString* month = [components objectAtIndex:0];
+//    NSString* day = [components objectAtIndex:1];
+    NSString *birthday = [NSString stringWithFormat:@"%@-%@",[components objectAtIndex:0],[components objectAtIndex:1]];
+//    NSLog(@"formatBD MyDate : %@",birthday);
+
+    return birthday;
+}
 @end

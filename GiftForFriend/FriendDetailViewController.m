@@ -31,22 +31,18 @@
     self.profilePictureView.profileID = self.userID;
     self.userName.text = self.userData[0][@"name"];
     self.userBD.text = self.userData[0][@"birthday_date"];
+    
+    NSInteger timeDiff = [self compareTime:[self formatBD:self.userData[0][@"birthday_date"]]];
+    self.countDay.text = [NSString stringWithFormat:@"%ld", (long)timeDiff];
+    
     NSLog(@"setFriendData 1");
-    NSLog(@"setFriendData 11, %@", self.userData[0][@"pic_cover"]);
-    if ([self.userData[0][@"pic_cover"] count] == 0){
-        NSLog(@"pic null");
-    }
-    NSLog(@"setFriendData 2");
-    if (self.userData[0][@"pic_cover"]!=nil){
+    if (![[self.userData[0][@"pic_cover"] description] isEqualToString:@"<null>"]){
         NSString *url_Img1 = self.userData[0][@"pic_cover"][@"source"];
         self.coverPic.image = [UIImage imageWithData:[NSData dataWithContentsOfURL:[NSURL URLWithString:url_Img1]]];
     }else{
         NSLog(@"pic null");
     }
-    NSLog(@"setFriendData 3");
-    NSInteger timeDiff = [self compareTime:[self formatBD:self.userData[0][@"birthday_date"]]];
-    
-    self.countDay.text = [NSString stringWithFormat:@"%ld", (long)timeDiff];
+    NSLog(@"setFriendData 2");
     
 }
 
